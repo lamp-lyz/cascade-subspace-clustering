@@ -3,6 +3,7 @@ from keras.models import Model
 from keras.datasets import mnist
 from keras.losses import kullback_leibler_divergence
 import numpy as np
+from sklearn.cluster import KMeans
 import matplotlib.pyplot as plt
 
 # this is the size of our encoded representations
@@ -53,10 +54,13 @@ autoencoder.fit(x_train, x_train,
                 shuffle=True,
                 validation_data=(x_test, x_test))
 
+k_means = KMeans(n_clusters=10)
+initial_centors = k_means.fit(encoded).cluster_centers_
 clustering_model = Model(input_img, encoded)
 
-y_true =
-y_pred =
+u = 
+y_true = max(0,)
+y_pred = 1
 
 lossfunc = kullback_leibler_divergence(y_true, y_pred)
 
