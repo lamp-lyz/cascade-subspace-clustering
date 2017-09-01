@@ -2,10 +2,12 @@ from keras.layers import Input, Dense
 from keras.models import Model
 from keras.datasets import mnist
 from keras.losses import kullback_leibler_divergence
+from keras import losses
 from keras import backend as K
 from sklearn.cluster import KMeans
 import matplotlib.pyplot as plt
 import numpy as np
+from keras.optimizers import SGD
 import tensorflow as tf
 
 # this is the size of our encoded representations
@@ -85,8 +87,16 @@ Q2 = np.divide(1, np.subtract(2, cosine_simi))
 # P1 =
 #
 # P2 =
+loss = losses.binary_crossentropy(Q1, Q2)
 
 
 # lossfunc = kullback_leibler_divergence(P2, P1)
 # output = Dense(10, activation="sigmoid", )
-# clustering_model = Model(x_train_embedding,)
+cluster_input = Input(shape=(encoding_dim,))
+clustered = Dense(encoding_dim, activation=None)(encoded)
+clustering_model = Model(cluster_input, clustered)
+clustering_model.compile(optimizer=SGD(lr=0.01, momentum=0.9,decay=1e-6), loss=loss)
+clustering_model.fit(x_train, x_train,
+                     epochs=5,
+                     batch_size=batch_size,
+                     shuffle=True)

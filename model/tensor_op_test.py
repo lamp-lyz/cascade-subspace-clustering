@@ -1,6 +1,8 @@
 from keras.datasets import mnist
 import numpy as np
+import tensorflow as tf
 from scipy import spatial
+from keras.models import Model
 
 # (x_train, _), (x_test, _) = mnist.load_data()
 #
@@ -78,3 +80,6 @@ Q2 = np.divide(1, np.subtract(2, cosine_simi))
 
 print "Q2"
 print Q2
+
+
+predictor = Model(x_train, )
