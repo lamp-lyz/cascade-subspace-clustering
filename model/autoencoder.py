@@ -11,29 +11,38 @@ encoding_dim = 32  # 32 floats -> compression of factor 24.5, assuming the input
 
 # this is our input placeholder
 input_img = Input(shape=(784,))
+
+# input_img = Input(shape=(784,))
+# # "encoded" is the encoded representation of the input
+# encoded = Dense(encoding_dim, activation='relu')(input_img)
+# # "decoded" is the lossy reconstruction of the input
+# decoded = Dense(784, activation='sigmoid')(encoded)
+
+
 # "encoded" is the encoded representation of the input
 encoded = Dense(128, activation='relu')(input_img)
 encoded = Dense(64, activation='relu')(encoded)
-encoded = Dense(encoding_dim, activation='relu')(encoded)
+encoded = Dense(32, activation='relu')(encoded)
 
 # "decoded" is the lossy reconstruction of the input
-decoded = Dense(encoding_dim, activation='relu')(encoded)
-decoded = Dense(64, activation='relu')(decoded)
-decoded = Dense(128, activation='relu')(decoded)
-decoded = Dense(784, activation='sigmoid')(decoded)
+decoded1 = Dense(64, activation='relu')(encoded)
+decoded2 = Dense(128, activation='relu')(decoded1)
+decoded = Dense(784, activation='sigmoid')(decoded2)
 
 # this model maps an input to its reconstruction
 autoencoder = Model(input_img, decoded)
-
+# print autoencoder.get_config()
 # this model maps an input to its encoded representation
-encoder = Model(input_img, encoded)
+# encoder = Model(inputs=input_img, outputs=encoded)
 
-# create a placeholder for an encoded (32-dimensional) input
-encoded_input = Input(shape=(encoding_dim,))
-# retrieve the last layer of the autoencoder model
-decoder_layer = autoencoder.layers[-4]
+# create a placeholder for an decoded (128-dimensional) input
+# decoded_input = Input(shape=(32,))
+
+# # retrieve the last layer of the autoencoder model
+# decoder_layer = autoencoder.layers[-3]
+
 # create the decoder model
-decoder = Model(encoded_input, decoder_layer(encoded_input))
+# decoder = Model(inputs=decoded_input, outputs=decoded)
 
 autoencoder.compile(optimizer='adadelta', loss='binary_crossentropy')
 
@@ -54,8 +63,12 @@ autoencoder.fit(x_train, x_train,
 
 # encode and decode some digits
 # note that we take them from the *test* set
-encoded_imgs = encoder.predict(x_test)
-decoded_imgs = decoder.predict(encoded_imgs)
+# encoded_imgs = encoder.predict(x_test)
+# print "encoded shape:" + encoded_imgs.shape
+# decoded_imgs = decoder.predict(encoded_imgs)
+# print "decoded shape:" + decoded_imgs.shape
+decoded_imgs = autoencoder.predict(x_test)
+
 
 n = 10  # how many digits we will display
 plt.figure(figsize=(20, 4))
