@@ -67,12 +67,15 @@ for index in range(1, initial_centers.shape[0]):
     col = np.sum(np.power(np.subtract(x_train_embedding, initial_centers[index]), 2), 1)
     z = np.vstack((z, col))
 z = z.transpose()
+print "z:"
 print z
 # batch_size * 1 each line is mean(dist(zi,u))
 u = np.mean(z, 1).reshape(len(x_train_embedding), 1)
 
 # Q1 Euclidean dissimilarity measure
 Q1 = np.maximum(0, np.subtract(u, z))
+print "Q1"
+print Q1
 
 dot_product = np.dot(x_train_embedding, np.transpose(initial_centers))
 
@@ -83,6 +86,8 @@ norm_product = np.multiply(x_train_embedding_norm, initial_centers_norm)
 
 cosine_simi = np.divide(dot_product, norm_product + 1e-9)
 Q2 = np.divide(1, np.subtract(2, cosine_simi))
+print "Q2:"
+print Q2
 #
 # P1 =
 #
@@ -96,7 +101,10 @@ cluster_input = Input(shape=(encoding_dim,))
 clustered = Dense(encoding_dim, activation=None)(encoded)
 clustering_model = Model(cluster_input, clustered)
 clustering_model.compile(optimizer=SGD(lr=0.01, momentum=0.9,decay=1e-6), loss=loss)
-clustering_model.fit(x_train, x_train,
+clustering_model.fit(x_train_embedding, x_train_embedding,
                      epochs=5,
                      batch_size=batch_size,
                      shuffle=True)
+clustering_result = clustering_model.predict(x_train_embedding)
+print "result:"
+print clustering_result
