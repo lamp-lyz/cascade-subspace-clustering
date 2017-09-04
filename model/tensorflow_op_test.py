@@ -1,14 +1,10 @@
 from keras.layers import Input, Dense, Lambda, Layer
 from keras.models import Model
 from keras.datasets import mnist
-from keras.losses import kullback_leibler_divergence
-from keras import losses
 from keras import backend as T
 from sklearn.cluster import KMeans
-import matplotlib.pyplot as plt
 import numpy as np
 from keras.optimizers import SGD
-# import tensorflow as tf
 import theano as theano
 import hungarian as hg
 
