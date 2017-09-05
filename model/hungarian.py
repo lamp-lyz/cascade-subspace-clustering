@@ -44,6 +44,8 @@ def accuracy(cm):
 def rectify_label(labels, classes):
     """entry point"""
     num_labels = len(np.unique(classes))
+    print "label nums"
+    print num_labels
 
     cm = confusion_matrix(classes, labels, labels=range(num_labels)) # gets the confusion matrix
     print "---------------------\nold confusion matrix:\n" \

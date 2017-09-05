@@ -54,7 +54,18 @@ x_train_embedding = Input(shape=(encoding_dim,))
 k_cluster = 10
 k_means = KMeans(n_clusters=k_cluster)
 encoded_predict = encoder.predict(x_train)
-centers = k_means.fit(encoded_predict).cluster_centers_
+initial_centers = k_means.fit(encoded_predict).cluster_centers_
+
+encoded_test = encoder.predict(x_test)
+kmeans_label = k_means.predict(encoded_test)
+true_label = y_test
+rectified_label, kmeans_acc = hg.rectify_label(labels=kmeans_label, classes=true_label)
+print "rectified label"
+print rectified_label
+
+print "kmeans accuracy"
+print kmeans_acc
+
 
 # print "initial centers:"
 # print initial_centers.shape
@@ -67,10 +78,10 @@ def myloss(y_true, y_pred):
     # print centers.shape
     # print "y pred shape"
     # print y_pred.shape
-    p1 = P1(y_pred, centers)
+    p1 = P1(y_pred, initial_centers)
     print p1
 
-    p2 = P2(y_pred, centers)
+    p2 = P2(y_pred, initial_centers)
     print p2
 
     loss = T.sum(((p2 + 1e-9) * T.log((p2 + T.epsilon()) / (p1 + T.epsilon()))), axis=1)
@@ -183,23 +194,59 @@ clustering_model.compile(optimizer=SGD(lr=1e-5, momentum=0.9, decay=1e-6), loss=
 
 clustering_model.fit(x=x_train,
                      y=x_train,
-                     epochs=100,
+                     epochs=500,
                      batch_size=batch_size,
                      shuffle=True)
 
+
+def assginment(clustering_results, cluster_centers):
+    print "result"
+    print clustering_result
+    print "center"
+    print cluster_centers
+
+    dst = np.array(np.sum(np.power(np.subtract(clustering_results, cluster_centers[0]), 2), 1))
+    for index in range(1, initial_centers.shape[0]):
+        col = np.sum(np.power(np.subtract(clustering_results, cluster_centers[index]), 2), 1)
+        print "temp dst"
+        print col.shape
+
+        dst = np.vstack((dst, col))
+    dst = dst.T
+    print "dst"
+    print dst.shape
+    mean_dst = np.mean(dst, axis=1)
+    q = np.maximum(0.0, np.tile(mean_dst, (dst.shape[1], 1)).T - dst)
+
+    num_centers = q.shape[1]
+    weight = 1.0 / (q.sum(axis=0) + 1e-7)
+    weight *= num_centers / weight.sum()
+    q = (q ** 2.0) * weight
+
+    q = (q.T / (q.sum(axis=1) + T.epsilon())).T
+    return q
+
+
 clustering_result = clustering_model.predict(x_test)
-assignment = P1(clustering_result, centers)
+print "clustering result"
+print clustering_result
 
-labels = T.argmax(assignment, 1)
-classes = y_train
+assignment = assginment(clustering_result, initial_centers)
+print "assignment:"
+print assignment.shape
 
-(css_labels, css_accuracy) = hg.rectify_label(labels=labels, classes=classes)
+css_labels_pred = np.argmax(assignment, axis=1)
+print "css label pred"
+print css_labels_pred.shape
+classes = y_test
+
+(css_labels, css_accuracy) = hg.rectify_label(labels=css_labels_pred, classes=classes)
 print "cascade subspace clustering accuracy"
 print css_accuracy
-
-km_labels = k_means.predict(x_test)
-
-(km_labels, km_accuracy) = hg.rectify_label(labels=km_labels, classes=classes)
-
-print "kmeans clustering accuracy"
-print km_accuracy
+#
+# km_labels_pred = k_means.predict(encoded_test)
+#
+# (km_labels, km_accuracy) = hg.rectify_label(labels=km_labels, classes=classes)
+#
+# print "kmeans clustering accuracy"
+# print km_accuracy
